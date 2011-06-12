@@ -49,36 +49,10 @@ SRC=	elf.c							\
 	libelf_extended.c					\
 	libelf_phdr.c						\
 	libelf_shdr.c						\
-	libelf_xlate.c						\
-	${GENSRCS}
+	libelf_xlate.c
 
 GENSRC=	libelf_fsize.c libelf_msize.c libelf_convert.c
 
 M4GEN := elf_types.m4
 
-OBJS := $(patsubst %.c,%.o, $(SRC) $(GENSRC))
-
-CPPFLAGS := -I$(CURDIR)/../common -I$(CURDIR)/../libelf
-
-$(LIB): $(OBJS)
-	cc -shared -o $@ $(OBJS)
-
-%.d: %.c
-	cc -MM $(CPPFLAGS) $< > $@
-
-%.c: %.m4 $(M4GEN)
-	m4 -D SRCDIR=$(CURDIR) $< > $@
-
-%.o: %.c
-	cc -g -fPIC $(CPPFLAGS) -c $< -o $@
-
-all: $(LIB)
-
-clean:
-	rm -f $(LIB) *.o *.d $(GENSRC)
-
-.PHONY: clean
-
-ifneq ($(MAKECMDGOALS), clean)
--include $(patsubst %.c,%.d, $(SRC) $(GENSRC))
-endif
+include ../Makefile.lib

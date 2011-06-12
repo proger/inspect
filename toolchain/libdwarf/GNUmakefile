@@ -67,33 +67,4 @@ GENSRC := dwarf_funcs.c \
 
 M4GEN := dwarf_nametbl.m4 dwarf_pro_nametbl.m4
 
-OBJDIR := obj
-OBJS := $(addprefix $(OBJDIR)/, $(patsubst %.c,%.o, $(SRC) $(GENSRC)))
-
-CFLAGS := -g -fPIC -MMD
-CPPFLAGS := -I$(CURDIR) -I$(CURDIR)/../libdwarf -I$(CURDIR)/../common -I$(CURDIR)/../libelf
-
-$(OBJDIR)/$(LIB): $(OBJS)
-	cc -shared -o $@ $(OBJS)
-
-#$(OBJDIR)/%.d: %.c
-#	cc -MM $(CPPFLAGS) $< > $@
-
-$(OBJDIR)/%.c: %.m4 $(M4GEN)
-	m4 -D SRCDIR=$(CURDIR) $< > $@
-
-$(OBJDIR)/%.o: %.c
-	cc $(CFLAGS) $(CPPFLAGS) -c $< -o $@
-
-clean:
-	rm -f $(OBJDIR)/$(LIB) $(OBJDIR)/*.o $(OBJDIR)/*.d $(addprefix $(OBJDIR)/,$(GENSRC))
-
-$(OBJDIR):
-	mkdir $(OBJDIR)
-
-.PHONY: clean
-
-ifneq ($(MAKECMDGOALS), clean)
--include $(patsubst %.c,%.d, $(SRC) $(GENSRC))
-endif
-
+include ../Makefile.lib
