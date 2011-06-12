@@ -65,48 +65,35 @@ GENSRC := dwarf_funcs.c \
 	dwarf_vars.c \
 	dwarf_weaks.c \
 
-# TODO: objdir support
-
 M4GEN := dwarf_nametbl.m4 dwarf_pro_nametbl.m4
 
-OBJS := $(patsubst %.c,%.o, $(SRC) $(GENSRC))
+OBJDIR := obj
+OBJS := $(addprefix $(OBJDIR)/, $(patsubst %.c,%.o, $(SRC) $(GENSRC)))
 
+CFLAGS := -g -fPIC -MMD
 CPPFLAGS := -I$(CURDIR) -I$(CURDIR)/../libdwarf -I$(CURDIR)/../common -I$(CURDIR)/../libelf
 
-libdwarf.so: $(OBJS)
+$(OBJDIR)/$(LIB): $(OBJS)
 	cc -shared -o $@ $(OBJS)
 
-%.d: %.c
-	cc -MM $(CPPFLAGS) $< > $@
+#$(OBJDIR)/%.d: %.c
+#	cc -MM $(CPPFLAGS) $< > $@
 
-%.c: %.m4 $(M4GEN)
+$(OBJDIR)/%.c: %.m4 $(M4GEN)
 	m4 -D SRCDIR=$(CURDIR) $< > $@
 
-%.o: %.c
-	cc -g -fPIC $(CPPFLAGS) -c $< -o $@
-
-all: $(LIB)
+$(OBJDIR)/%.o: %.c
+	cc $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(LIB) *.o *.d $(GENSRC)
+	rm -f $(OBJDIR)/$(LIB) $(OBJDIR)/*.o $(OBJDIR)/*.d $(addprefix $(OBJDIR)/,$(GENSRC))
+
+$(OBJDIR):
+	mkdir $(OBJDIR)
 
 .PHONY: clean
 
 ifneq ($(MAKECMDGOALS), clean)
 -include $(patsubst %.c,%.d, $(SRC) $(GENSRC))
 endif
-
-#$(OBJS): | $(O)
-
-#dwarf_pubnames.c:	dwarf_nametbl.m4 dwarf_pubnames.m4
-#dwarf_pubtypes.c:	dwarf_nametbl.m4 dwarf_pubtypes.m4
-#dwarf_weaks.c:		dwarf_nametbl.m4 dwarf_weaks.m4
-#dwarf_funcs.c:		dwarf_nametbl.m4 dwarf_funcs.m4
-#dwarf_vars.c:		dwarf_nametbl.m4 dwarf_vars.m4
-#dwarf_types.c:		dwarf_nametbl.m4 dwarf_types.m4
-#dwarf_pro_pubnames.c:	dwarf_pro_nametbl.m4 dwarf_pro_pubnames.m4
-#dwarf_pro_weaks.c:	dwarf_pro_nametbl.m4 dwarf_pro_weaks.m4
-#dwarf_pro_funcs.c:	dwarf_pro_nametbl.m4 dwarf_pro_funcs.m4
-#dwarf_pro_types.c:	dwarf_pro_nametbl.m4 dwarf_pro_types.m4
-#dwarf_pro_vars.c:	dwarf_pro_nametbl.m4 dwarf_pro_vars.m4
 
