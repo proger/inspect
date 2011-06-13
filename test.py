@@ -1,5 +1,11 @@
-from kmem import *
+import linux
 from commands import getoutput as go
+import struct
+
+kvm = linux.KVM()
+kmem_read = kvm.read
+per_cpu = kvm.per_cpu
+kallsyms = kvm.kallsyms
 
 def read_udpmem():
     #  ffffffff81cc07a0 D sysctl_udp_mem    long[3]
